@@ -1,8 +1,5 @@
-use std::time::Duration;
-
 use anyhow::Result;
 use clap::Parser;
-use tokio::time;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[derive(Parser, Debug)]
@@ -28,7 +25,7 @@ async fn main() -> Result<()> {
         None => soldr::Config::default(),
     };
 
-    let (ingest, mgmt, pool) = soldr::app(config).await?;
+    let (ingest, mgmt, retry_queue) = soldr::app(config).await?;
 
     let addr = "0.0.0.0:3443";
     let addr = addr.parse()?;
@@ -42,14 +39,7 @@ async fn main() -> Result<()> {
 
     tokio::spawn(async move {
         tracing::info!("starting retry queue");
-        let mut interval = time::interval(Duration::from_secs(60));
-
-        loop {
-            interval.tick().await;
-            let pool2 = pool.clone();
-            tracing::trace!("retrying failed requests");
-            soldr::queue::tick(pool2).await;
-        }
+        retry_queue.start().await;
     });
 
     let addr = "0.0.0.0:3000";
