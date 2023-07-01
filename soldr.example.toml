@@ -1,0 +1,1 @@
+database_url = "sqlite:soldr.db?mode=rwc"
