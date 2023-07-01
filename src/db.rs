@@ -173,15 +173,12 @@ pub async fn list_failed_requests(pool: &SqlitePool) -> Result<Vec<QueuedRequest
 
     let query = r#"
     SELECT *
-    FROM requests
+    FROM requests LEFT JOIN attempts on requests.id = attempts.request_id
     WHERE state = 2
-        AND id IN (
-            SELECT request_id
-            FROM attempts
-            GROUP BY request_id
-            ORDER BY created_at
-            LIMIT 10
-        );
+    GROUP BY requests.id
+    HAVING COUNT(attempts.id) < 100
+    ORDER BY requests.created_at ASC
+    LIMIT 10
     "#;
 
     let requests = sqlx::query_as::<_, Request>(query)
@@ -190,12 +187,19 @@ pub async fn list_failed_requests(pool: &SqlitePool) -> Result<Vec<QueuedRequest
 
     let queued_requests = requests
         .into_iter()
-        .map(|request| QueuedRequest {
-            id: request.id,
-            method: request.method,
-            uri: request.uri,
-            headers: serde_json::from_str(&request.headers).unwrap(),
-            body: request.body,
+        .map(|request| {
+            tracing::debug!(
+                "request ID: {:?}, request URI: {:?}",
+                &request.id,
+                &request.uri
+            );
+            QueuedRequest {
+                id: request.id,
+                method: request.method,
+                uri: request.uri,
+                headers: serde_json::from_str(&request.headers).unwrap(),
+                body: request.body,
+            }
         })
         .collect();
 
