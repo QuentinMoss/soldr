@@ -20,7 +20,6 @@ impl OriginCache {
         }
     }
 
-
     pub async fn refresh(&self) -> Result<(), AppError> {
         // Fetch the latest origin data from the database using the provided SqlitePool
         let new_origins = list_origins(&self.pool).await?;

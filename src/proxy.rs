@@ -7,9 +7,8 @@ use hyper::Response;
 use sqlx::SqlitePool;
 use std::sync::Arc;
 
-use crate::db::insert_attempt;
 use crate::cache::OriginCache;
-
+use crate::db::insert_attempt;
 use crate::db::QueuedRequest;
 
 pub type Client = hyper::client::Client<HttpConnector, Body>;
