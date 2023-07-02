@@ -1,0 +1,4 @@
+config:
+  gcp:project: feisty-current-391607
+  gcp:region: us-west1
+  gcp:zone: us-west1-c

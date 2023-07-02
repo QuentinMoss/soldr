@@ -1,0 +1,18 @@
+---
+concurrency: 10
+base: 'http://localhost:3000'
+iterations: 100000
+rampup: 5
+
+plan:
+  - name: Test Success
+    request:
+      method: POST
+      headers: ['Host: example.wh.soldr.dev']
+      body: ''
+      url: /
+#  - name: Test Failures
+#    request:
+#      method: GET
+#      headers: ['Content-Type: application/json']
+#      url: /failures
